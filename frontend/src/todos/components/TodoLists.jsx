@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { Fragment, useState, useEffect, useCallback } from 'react'
 import {
   Card,
   CardContent,
@@ -24,27 +24,30 @@ export const TodoLists = ({ style }) => {
     fetchTodoLists().then(setTodoLists)
   }, [])
 
-  const saveTodoList = async (id, { todos }) => {
-    const res = await fetch('http://localhost:3001/updateTodos', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id, todos }),
-    })
+  const saveTodoList = useCallback(
+    async (id, { todos }) => {
+      const res = await fetch('http://localhost:3001/updateTodos', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, todos }),
+      })
 
-    if (!res.ok) {
-      console.error('Something went wrong:', res.statusText)
-      return
-    }
+      if (!res.ok) {
+        console.error('Something went wrong:', res.statusText)
+        return
+      }
 
-    const updatedList = await res.json()
+      const updatedList = await res.json()
 
-    setTodoLists((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], todos: updatedList },
-    }))
-  }
+      setTodoLists((prev) => ({
+        ...prev,
+        [id]: { ...prev[id], todos: updatedList },
+      }))
+    },
+    [setTodoLists]
+  )
 
   if (!Object.keys(todoLists).length) return null
 
