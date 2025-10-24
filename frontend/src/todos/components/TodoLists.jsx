@@ -11,24 +11,9 @@ import {
 import ReceiptIcon from '@mui/icons-material/Receipt'
 import { TodoListForm } from './TodoListForm'
 
-// Simulate network
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-
-const fetchTodoLists = () => {
-  return sleep(1000).then(() =>
-    Promise.resolve({
-      '0000000001': {
-        id: '0000000001',
-        title: 'First List',
-        todos: ['First todo of first list!'],
-      },
-      '0000000002': {
-        id: '0000000002',
-        title: 'Second List',
-        todos: ['First todo of second list!'],
-      },
-    })
-  )
+const fetchTodoLists = async () => {
+  const res = await fetch('http://localhost:3001/todolists')
+  return res.json()
 }
 
 export const TodoLists = ({ style }) => {
@@ -39,7 +24,30 @@ export const TodoLists = ({ style }) => {
     fetchTodoLists().then(setTodoLists)
   }, [])
 
+  const saveTodoList = async (id, { todos }) => {
+    const res = await fetch('http://localhost:3001/updateTodos', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, todos }),
+    })
+
+    if (!res.ok) {
+      console.error('Something went wrong:', res.statusText)
+      return
+    }
+
+    const updatedList = await res.json()
+
+    setTodoLists((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], todos: updatedList },
+    }))
+  }
+
   if (!Object.keys(todoLists).length) return null
+
   return (
     <Fragment>
       <Card style={style}>
@@ -61,13 +69,7 @@ export const TodoLists = ({ style }) => {
         <TodoListForm
           key={activeList} // use key to make React recreate component to reset internal state
           todoList={todoLists[activeList]}
-          saveTodoList={(id, { todos }) => {
-            const listToUpdate = todoLists[id]
-            setTodoLists({
-              ...todoLists,
-              [id]: { ...listToUpdate, todos },
-            })
-          }}
+          saveTodoList={saveTodoList}
         />
       )}
     </Fragment>
