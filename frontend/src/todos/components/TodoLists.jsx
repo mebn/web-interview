@@ -9,6 +9,7 @@ import {
   Typography,
 } from '@mui/material'
 import ReceiptIcon from '@mui/icons-material/Receipt'
+import DoneIcon from '@mui/icons-material/Done'
 import { TodoListForm } from './TodoListForm'
 
 const fetchTodoLists = async () => {
@@ -63,6 +64,10 @@ export const TodoLists = ({ style }) => {
                   <ReceiptIcon />
                 </ListItemIcon>
                 <ListItemText primary={todoLists[key].title} />
+                {todoLists[key].todos.length > 0 &&
+                  Object.values(todoLists[key].todos).every((todo) => todo.completedAt) && (
+                    <DoneIcon color='success' />
+                  )}
               </ListItemButton>
             ))}
           </List>
