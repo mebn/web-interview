@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { TextField, Card, CardContent, CardActions, Button, Typography } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
+import CheckBoxIcon from '@mui/icons-material/CheckBox'
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 
 export const TodoListForm = ({ todoList, saveTodoList }) => {
   const [todos, setTodos] = useState(todoList.todos)
@@ -23,7 +25,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
           onSubmit={(e) => e.preventDefault()}
           style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
         >
-          {todos.map((name, index) => (
+          {todos.map((todo, index) => (
             <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
               <Typography sx={{ margin: '8px' }} variant='h6'>
                 {index + 1}
@@ -31,16 +33,31 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
               <TextField
                 sx={{ flexGrow: 1, marginTop: '1rem' }}
                 label='What to do?'
-                value={name}
+                value={todo.task}
                 onChange={(event) => {
                   setTodos([
                     // immutable update
                     ...todos.slice(0, index),
-                    event.target.value,
+                    { ...todo, task: event.target.value },
                     ...todos.slice(index + 1),
                   ])
                 }}
               />
+
+              <Button
+                onClick={() => {
+                  const completedAt = todo.completedAt ? null : new Date().toISOString()
+                  setTodos([
+                    // immutable update
+                    ...todos.slice(0, index),
+                    { ...todo, completedAt },
+                    ...todos.slice(index + 1),
+                  ])
+                }}
+              >
+                {todo.completedAt ? <CheckBoxIcon /> : <CheckBoxOutlineBlankIcon />}
+              </Button>
+
               <Button
                 sx={{ margin: '8px' }}
                 size='small'
@@ -62,7 +79,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
               type='button'
               color='primary'
               onClick={() => {
-                setTodos([...todos, ''])
+                setTodos([...todos, { task: '', completedAt: null }])
               }}
             >
               Add Todo <AddIcon />
