@@ -1,3 +1,7 @@
+# Tasks completed
+- Main task
+- All four additional tasks
+
 # Sellpy web interview
 
 Welcome to Sellpy's web interview repo!
