@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { TextField, Card, CardContent, CardActions, Button, Typography } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
@@ -7,11 +7,26 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 
 export const TodoListForm = ({ todoList, saveTodoList }) => {
   const [todos, setTodos] = useState(todoList.todos)
+  const isTyping = useRef(false) // only debounce when typing
+  const isFirstRender = useRef(true) // prevent server call on first render
+
+  const updateTodo = (index, updates) => {
+    setTodos((prev) => prev.map((todo, i) => (i === index ? { ...todo, ...updates } : todo)))
+  }
 
   useEffect(() => {
-    // prevent spamming requests on every keypress
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+
+    if (!isTyping.current) {
+      saveTodoList(todoList.id, { todos })
+      return
+    }
     const timeout = setTimeout(() => {
       saveTodoList(todoList.id, { todos })
+      isTyping.current = false
     }, 200)
 
     return () => clearTimeout(timeout)
@@ -50,13 +65,9 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
                 sx={{ flexGrow: 1, marginTop: '1rem' }}
                 label='What to do?'
                 value={todo.task}
-                onChange={(event) => {
-                  setTodos([
-                    // immutable update
-                    ...todos.slice(0, index),
-                    { ...todo, task: event.target.value },
-                    ...todos.slice(index + 1),
-                  ])
+                onChange={(e) => {
+                  isTyping.current = true
+                  updateTodo(index, { task: e.target.value })
                 }}
               />
 
@@ -66,12 +77,9 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
                 type='date'
                 value={todo.completeBy || ''}
                 InputLabelProps={{ shrink: true }}
-                onChange={(event) => {
-                  setTodos([
-                    ...todos.slice(0, index),
-                    { ...todo, completeBy: event.target.value },
-                    ...todos.slice(index + 1),
-                  ])
+                onChange={(e) => {
+                  isTyping.current = true
+                  updateTodo(index, { completeBy: e.target.value })
                 }}
               />
 
@@ -80,15 +88,11 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
               </Typography>
 
               <Button
-                onClick={() => {
-                  const completedAt = todo.completedAt ? null : new Date().toISOString()
-                  setTodos([
-                    // immutable update
-                    ...todos.slice(0, index),
-                    { ...todo, completedAt },
-                    ...todos.slice(index + 1),
-                  ])
-                }}
+                onClick={() =>
+                  updateTodo(index, {
+                    completedAt: todo.completedAt ? null : new Date().toISOString(),
+                  })
+                }
               >
                 {todo.completedAt ? <CheckBoxIcon /> : <CheckBoxOutlineBlankIcon />}
               </Button>
@@ -97,13 +101,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
                 sx={{ margin: '8px' }}
                 size='small'
                 color='secondary'
-                onClick={() => {
-                  setTodos([
-                    // immutable delete
-                    ...todos.slice(0, index),
-                    ...todos.slice(index + 1),
-                  ])
-                }}
+                onClick={() => setTodos((prev) => prev.filter((_, i) => i !== index))}
               >
                 <DeleteIcon />
               </Button>
@@ -114,9 +112,9 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
             <Button
               type='button'
               color='primary'
-              onClick={() => {
-                setTodos([...todos, { task: '', completedAt: null, completeBy: null }])
-              }}
+              onClick={() =>
+                setTodos((prev) => [...prev, { task: '', completedAt: null, completeBy: null }])
+              }
             >
               Add Todo <AddIcon />
             </Button>

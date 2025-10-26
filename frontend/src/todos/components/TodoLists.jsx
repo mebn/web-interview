@@ -50,6 +50,9 @@ export const TodoLists = ({ style }) => {
     [setTodoLists]
   )
 
+  const isListComplete = (list) =>
+    list.todos.length > 0 && list.todos.every((todo) => todo.completedAt)
+
   if (!Object.keys(todoLists).length) return null
 
   return (
@@ -64,10 +67,7 @@ export const TodoLists = ({ style }) => {
                   <ReceiptIcon />
                 </ListItemIcon>
                 <ListItemText primary={todoLists[key].title} />
-                {todoLists[key].todos.length > 0 &&
-                  Object.values(todoLists[key].todos).every((todo) => todo.completedAt) && (
-                    <DoneIcon color='success' />
-                  )}
+                {isListComplete(todoLists[key]) && <DoneIcon color='success' />}
               </ListItemButton>
             ))}
           </List>
