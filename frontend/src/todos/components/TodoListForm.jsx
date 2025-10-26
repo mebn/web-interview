@@ -17,6 +17,21 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
     return () => clearTimeout(timeout)
   }, [todos, todoList.id, saveTodoList])
 
+  const differenceInDays = (completeBy) => {
+    if (!completeBy) return 'No due date'
+
+    const today = new Date()
+    const dueDate = new Date(completeBy)
+
+    const msPerDay = 1000 * 60 * 60 * 24
+    const diffDays = Math.ceil((dueDate - today) / msPerDay)
+
+    if (diffDays === 0) return 'Due today'
+    if (diffDays === 1) return 'Due tomorrow'
+    if (diffDays > 1) return `Due in ${diffDays} days`
+    return `${Math.abs(diffDays)} days overdue`
+  }
+
   return (
     <Card sx={{ margin: '0 1rem' }}>
       <CardContent>
@@ -30,6 +45,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
               <Typography sx={{ margin: '8px' }} variant='h6'>
                 {index + 1}
               </Typography>
+
               <TextField
                 sx={{ flexGrow: 1, marginTop: '1rem' }}
                 label='What to do?'
@@ -43,6 +59,25 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
                   ])
                 }}
               />
+
+              <TextField
+                sx={{ marginTop: '1rem' }}
+                label='Complete by'
+                type='date'
+                value={todo.completeBy || ''}
+                InputLabelProps={{ shrink: true }}
+                onChange={(event) => {
+                  setTodos([
+                    ...todos.slice(0, index),
+                    { ...todo, completeBy: event.target.value },
+                    ...todos.slice(index + 1),
+                  ])
+                }}
+              />
+
+              <Typography style={{ margin: '0 1rem' }}>
+                {todo.completedAt ? '' : differenceInDays(todo.completeBy)}
+              </Typography>
 
               <Button
                 onClick={() => {
@@ -74,12 +109,13 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
               </Button>
             </div>
           ))}
+
           <CardActions>
             <Button
               type='button'
               color='primary'
               onClick={() => {
-                setTodos([...todos, { task: '', completedAt: null }])
+                setTodos([...todos, { task: '', completedAt: null, completeBy: null }])
               }}
             >
               Add Todo <AddIcon />

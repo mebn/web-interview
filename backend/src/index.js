@@ -12,12 +12,12 @@ let db = {
   '0000000001': {
     id: '0000000001',
     title: 'First List',
-    todos: [{ task: 'First todo of first list!', completedAt: null }],
+    todos: [{ task: 'First todo of first list!', completedAt: null, completeBy: null }],
   },
   '0000000002': {
     id: '0000000002',
     title: 'Second List',
-    todos: [{ task: 'First todo of second list!', completedAt: null }],
+    todos: [{ task: 'First todo of second list!', completedAt: null, completeBy: null }],
   },
 }
 
